@@ -1,15 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-	flexRender,
-	getCoreRowModel,
-	getSortedRowModel,
-	useReactTable,
-	createColumnHelper,
-} from "@tanstack/react-table";
-import "./index.css";
+import { createColumnHelper } from "@tanstack/react-table";
 import { faker } from "@faker-js/faker";
+import { CustomTable } from "./components/customTable";
 
 declare module "@tanstack/table-core" {
 	// @ts-expect-error
@@ -19,15 +13,18 @@ declare module "@tanstack/table-core" {
 }
 
 type Test = {
-	id: number;
+	id: number | string;
 	pendingTransfer: number;
 	amount: number;
+	testNumber: number;
 };
 
+// NOTE: ダミーデータ作成
 const defaultData: Test[] = Array.from({ length: 30 }, () => ({
 	id: faker.number.int({ min: 0, max: 100 }),
 	pendingTransfer: faker.number.int({ min: 0, max: 100 }),
 	amount: faker.number.int({ min: 0, max: 100 }),
+	testNumber: faker.number.int({ min: 0, max: 100 }),
 }));
 
 const columnHelper = createColumnHelper<Test>();
@@ -54,102 +51,19 @@ const columns = [
 			}),
 		],
 	}),
+	columnHelper.accessor("testNumber", {
+		id: "testNumber",
+		cell: (info) => info.getValue(),
+		header: () => "testNumber",
+	}),
 ];
 
 export const Home = () => {
-	const [data, _setData] = React.useState(() => [...defaultData]);
-	const rerender = React.useReducer(() => ({}), {})[1];
-
-	const table = useReactTable({
-		columns,
-		data,
-		debugTable: true,
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-	});
-
-	table.getHeaderGroups().map((header) => {
-		console.log(header);
-	});
+	const [data, _setData] = React.useState<Test[]>(() => [...defaultData]);
 
 	return (
 		<div className="p-2">
-			<div className="h-2" />
-			<table>
-				<thead>
-					{table.getHeaderGroups().map((headerGroup) => (
-						<tr key={headerGroup.id}>
-							{headerGroup.headers.map((header) => {
-								const rowSpan = header.column.columnDef.meta?.rowSpan;
-
-								if (
-									!header.isPlaceholder &&
-									rowSpan !== undefined &&
-									header.id === header.column.id
-								) {
-									return null;
-								}
-
-								return (
-									<th key={header.id} colSpan={header.colSpan}>
-										{header.isPlaceholder ? null : (
-											// biome-ignore lint:
-											<div
-												className={
-													header.column.getCanSort()
-														? "cursor-pointer select-none"
-														: ""
-												}
-												onClick={header.column.getToggleSortingHandler()}
-												title={
-													header.column.getCanSort()
-														? header.column.getNextSortingOrder() === "asc"
-															? "Sort ascending"
-															: header.column.getNextSortingOrder() === "desc"
-																? "Sort descending"
-																: "Clear sort"
-														: undefined
-												}
-											>
-												{flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-												)}
-												{{
-													asc: " 🔼",
-													desc: " 🔽",
-												}[header.column.getIsSorted() as string] ?? null}
-											</div>
-										)}
-									</th>
-								);
-							})}
-						</tr>
-					))}
-				</thead>
-				<tbody>
-					{table
-						.getRowModel()
-						.rows.slice(0, 10)
-						.map((row) => {
-							return (
-								<tr key={row.id}>
-									{row.getVisibleCells().map((cell) => {
-										return (
-											<td key={cell.id}>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)}
-											</td>
-										);
-									})}
-								</tr>
-							);
-						})}
-				</tbody>
-			</table>
-			<div>{table.getRowModel().rows.length.toLocaleString()} Rows</div>
+			<CustomTable data={data} columns={columns} />
 		</div>
 	);
 };
