@@ -29,12 +29,14 @@ export const getMergeHeaderGroups = <TData extends object>(
 		const headerGroup =
 			i === 0 ? headerGroups[i].headers : resultHeaderGroups[i];
 
+		// isPlaceholder が true の場合は、そのセルは結合される
 		const preHeaders: (Header<TData, unknown> & { rowSpan: number })[] =
 			headerGroup.map((header) =>
 				header.isPlaceholder
 					? {
 							...header,
 							isPlaceholder: false,
+							// 何行結合するか
 							rowSpan: headerGroups.length - i,
 						}
 					: { ...header, rowSpan: 1 },
