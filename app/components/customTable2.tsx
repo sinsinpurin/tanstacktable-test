@@ -1,6 +1,6 @@
 // customTable2.tsx
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
 	getCoreRowModel,
@@ -39,16 +39,16 @@ export const CustomTable = <T extends object>({
 		enableSortingRemoval: false,
 	});
 
-	const getAmountSortIcon = (sortState: SortState) => {
-		switch (sortState) {
+	const getAmountSortIcon = () => {
+		switch (amountSortState) {
 			case "amountAsc":
-				return " 🔼A";
+				return " ↑A";
 			case "amountDesc":
-				return " 🔽A";
+				return " ↓A";
 			case "pendingAsc":
-				return " 🔼P";
+				return " ↑P";
 			case "pendingDesc":
-				return " 🔽P";
+				return " ↓P";
 			default:
 				return "";
 		}
@@ -69,14 +69,16 @@ export const CustomTable = <T extends object>({
 												? "cursor-pointer select-none"
 												: ""
 										}
-										onClick={header.column.getToggleSortingHandler()}
+										onClick={() =>
+											onSortingChange([{ id: "amount", desc: true }])
+										}
 									>
 										{flexRender(
 											header.column.columnDef.header,
 											header.getContext(),
 										)}
 										{header.column.id === "amount"
-											? getAmountSortIcon(amountSortState)
+											? getAmountSortIcon()
 											: header.column.getIsSorted() && (
 													<span>
 														{header.column.getIsSorted() === "desc"
